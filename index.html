@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>student intel system</title>
+  <style>
+    body { background:#070707; color:#e6e6e6; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    .wrap { max-width:1000px; margin:32px auto; padding:24px; }
+    h1 { font-size:28px; letter-spacing:1px; }
+    .muted { color:#8b8f97; margin-bottom:16px; }
+    .nav { display:flex; gap:10px; margin-bottom:18px; }
+    .btn { cursor:pointer; border:1px solid #1f1f1f; background:#0f0f0f; color:#fff; padding:10px 14px; border-radius:10px; }
+    .btn.active { background:#141414; box-shadow:0 0 0 1px #2a2a2a inset; }
+    .panel { display:none; }
+    .panel.active { display:block; }
+    .card { background:#0e0e0e; border:1px solid #1f1f1f; border-radius:14px; padding:16px; }
+    input { width:100%; padding:12px 14px; border-radius:10px; border:1px solid #1f1f1f; background:#090909; color:#fff; margin-bottom:12px; }
+    .row { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:10px 0; border-bottom:1px dashed #1f1f1f; cursor:pointer; }
+    .row:last-child { border-bottom:none; }
+    .tag { background:#141414; padding:4px 10px; border-radius:999px; font-size:12px; }
+    .warn { text-align:center; font-size:22px; letter-spacing:2px; padding:60px 0; color:#ff5f5f; }
+
+    .overlay { position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; }
+    .overlay.active { display:block; }
+    .drawer { position:fixed; right:-560px; top:0; height:100%; width:560px; background:#080808; border-left:1px solid #1f1f1f; transition:right .25s ease; padding:20px; overflow:auto; }
+    .drawer.active { right:0; }
+    .drawer h2 { font-size:22px; margin-bottom:8px; }
+    .kv { display:grid; grid-template-columns:160px 1fr; gap:10px; padding:8px 0; border-bottom:1px dashed #1f1f1f; }
+    .kv:last-child { border-bottom:none; }
+    .close { cursor:pointer; float:right; opacity:.8; }
+    .stamp { margin-top:14px; font-size:12px; color:#8b8f97; letter-spacing:1px; }
+    .cred { margin-top:14px; }
+    .cred h3 { font-size:14px; letter-spacing:1px; margin-bottom:6px; color:#c7cbd1; }
+    .cred .box { background:#0c0c0c; border:1px solid #1f1f1f; border-radius:10px; padding:12px; }
+
+    img.photo { width:110px; height:140px; object-fit:cover; border:1px solid #1f1f1f; border-radius:10px; background:#0c0c0c; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>student intel system</h1>
+    <div class="muted">static demo • click a record for full intel • removals offline</div>
+
+    <div class="nav">
+      <button class="btn active" data-tab="search">search</button>
+      <button class="btn" data-tab="database">database</button>
+      <button class="btn" data-tab="removals">removals</button>
+    </div>
+
+    <div id="search" class="panel active">
+      <div class="card">
+        <input id="query" placeholder="search name or id" />
+        <div id="results"></div>
+      </div>
+    </div>
+
+    <div id="database" class="panel">
+      <div id="dbList" class="card"></div>
+    </div>
+
+    <div id="removals" class="panel">
+      <div class="card"><div class="warn">DOWN FOR TESTING</div></div>
+    </div>
+  </div>
+
+  <div id="overlay" class="overlay"></div>
+  <div id="drawer" class="drawer">
+    <span id="close" class="close">x</span>
+    <h2 id="d_name"></h2>
+
+    <div class="card">
+      <div class="kv"><div>photo</div><div><img id="d_photo" class="photo" /></div></div>
+      <div class="kv"><div>student id</div><div id="d_id"></div></div>
+      <div class="kv"><div>status</div><div id="d_status"></div></div>
+      <div class="kv"><div>grade</div><div id="d_grade"></div></div>
+      <div class="kv"><div>dob</div><div id="d_dob"></div></div>
+      <div class="kv"><div>notes</div><div id="d_notes"></div></div>
+    </div>
+
+    <div class="cred">
+      <h3>pretend login</h3>
+      <div class="box">
+        <div id="d_email"></div>
+        <div id="d_pass"></div>
+      </div>
+    </div>
+
+    <div class="stamp">AUTHORIZED PERSONNEL ONLY</div>
+  </div>
+
+  <script>
+    const students = [
+      {
+        name: 'Thomas Graham',
+        id: '56254',
+        status: 'active',
+        grade: '—',
+        dob: '—',
+        notes: 'no additional flags'
+      }
+    ];
+
+    const q = document.getElementById('query');
+    const results = document.getElementById('results');
+    const dbList = document.getElementById('dbList');
+    const overlay = document.getElementById('overlay');
+    const drawer = document.getElementById('drawer');
+    const photoEl = document.getElementById('d_photo');
+
+    function emailFor(name) {
+      const p = name.toLowerCase().split(' ');
+      return `${p[p.length-1]}.${p[0]}@gloucestertownshipschools.org`;
+    }
+
+    function openDrawer(s) {
+      document.getElementById('d_name').textContent = s.name;
+      document.getElementById('d_id').textContent = s.id;
+      document.getElementById('d_status').textContent = s.status;
+      document.getElementById('d_grade').textContent = s.grade;
+      document.getElementById('d_dob').textContent = s.dob;
+      document.getElementById('d_notes').textContent = s.notes;
+      document.getElementById('d_email').textContent = emailFor(s.name);
+      document.getElementById('d_pass').textContent = `Password: GTps${s.id}`;
+
+      // load photo from same folder as index.html
+      photoEl.src = `${s.id}.jpg`;
+      photoEl.onerror = () => { photoEl.src = ''; };
+
+      overlay.classList.add('active');
+      drawer.classList.add('active');
+    }
+
+    function closeDrawer() {
+      overlay.classList.remove('active');
+      drawer.classList.remove('active');
+    }
+
+    overlay.onclick = closeDrawer;
+    document.getElementById('close').onclick = closeDrawer;
+
+    function makeRow(s) {
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.innerHTML = `<span>${s.name}</span><span class="tag">${s.id}</span>`;
+      row.onclick = () => openDrawer(s);
+      return row;
+    }
+
+    function renderSearch() {
+      const v = (q.value || '').toLowerCase().trim();
+      results.innerHTML = '';
+      if (!v) return;
+      const hits = students.filter(s => s.name.toLowerCase().includes(v) || s.id.includes(v));
+      if (!hits.length) {
+        results.innerHTML = '<div class="row"><span>no match</span><span class="tag">0</span></div>';
+        return;
+      }
+      hits.forEach(s => results.appendChild(makeRow(s)));
+    }
+
+    function renderDB() {
+      dbList.innerHTML = '';
+      students.forEach(s => dbList.appendChild(makeRow(s)));
+    }
+
+    q.addEventListener('input', renderSearch);
+    renderDB();
+
+    document.querySelectorAll('.btn').forEach(b => {
+      b.onclick = () => {
+        document.querySelectorAll('.btn').forEach(x => x.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        b.classList.add('active');
+        document.getElementById(b.dataset.tab).classList.add('active');
+      };
+    });
+  </script>
+</body>
+</html>
