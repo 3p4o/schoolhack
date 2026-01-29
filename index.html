@@ -1,187 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Student DB</title>
+<style>
+body { font-family: sans-serif; margin:0; background:#111; color:#eee; }
+input { width:100%; padding:10px; margin:10px 0; background:#222; border:none; color:#eee; }
+#results, #dbList { max-width:600px; margin:0 auto; }
+.row { padding:5px 10px; border-bottom:1px solid #444; cursor:pointer; display:flex; justify-content:space-between; }
+.row:hover { background:#333; }
+#overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:#000b; display:none; }
+#overlay.active { display:block; }
+#drawer { position:fixed; right:0; top:0; width:350px; height:100%; background:#222; padding:20px; display:none; overflow:auto; }
+#drawer.active { display:block; }
+#d_photo { width:100%; display:block; margin-bottom:10px; }
+button { background:#444; border:none; padding:5px 10px; color:#eee; cursor:pointer; }
+</style>
+</head>
+<body>
+
+<input id="query" placeholder="Search students...">
+<div id="results"></div>
+<h3 style="text-align:center">All Students</h3>
+<div id="dbList"></div>
+
+<div id="overlay"></div>
+
+<div id="drawer">
+  <img id="d_photo">
+  <p>Name: <span id="d_name"></span></p>
+  <p>ID: <span id="d_id"></span></p>
+  <p>Status: <span id="d_status"></span></p>
+  <p>Grade: <span id="d_grade"></span></p>
+  <p>Guardian: <span id="d_guardian"></span></p>
+  <p>Address: <span id="d_address"></span></p>
+  <p>School: <span id="d_school"></span></p>
+  <p>Notes: <span id="d_notes"></span></p>
+  <p>Email: <span id="d_email"></span></p>
+  <p>Password: <span id="d_pass"></span></p>
+  <button id="close">Close</button>
+</div>
+
 <script>
-  const students = [
-    {
-      name: 'Thomas J. Graham',
-      id: '56254',
-      grade: '8',
-      guardian: 'Gerald Graham / Denise Schellenger',
-      address: '27 Erial Rd Blackwood, NJ 08012',
-      school: 'CWL',
-      notes: 'no additional flags',
-      status: 'active',
-      hasPhoto: true
-    },
-    {
-      name: 'Lucas Johnson',
-      id: '54698',
-      grade: '8',
-      guardian: 'Bryan Johnson / Lisa Johnson',
-      address: '108 West Ct Blackwood, NJ 08012',
-      school: 'CWL',
-      notes: 'no additional flags',
-      status: 'active',
-      hasPhoto: true
-    },
-    {
-      name: 'Ezra J. Cook',
-      id: '56431',
-      grade: '8',
-      guardian: 'LaShaya Ford',
-      address: '502 Harbor Ln Sicklerville, NJ 08081',
-      school: 'CWL',
-      notes: 'Football Team',
-      status: 'active',
-      hasPhoto: false
-    },
-    {
-      name: 'Kinsley Alex Boguszewski',
-      id: '56847',
-      grade: '7',
-      guardian: 'Daniel & Dana Boguszewski',
-      address: '1081 Kearsley Rd Sicklerville, NJ 08081',
-      school: 'Ann Mullen',
-      notes: '',
-      status: 'active',
-      hasPhoto: false
-    },
-    {
-      name: 'Giuliana G McDade',
-      id: '56903',
-      grade: '8',
-      guardian: 'Jermain & Melissa McDade',
-      address: '3 Mulberry St Sicklerville, NJ 08081',
-      school: 'Ann Mullen',
-      notes: '',
-      status: 'active',
-      hasPhoto: false
-    },
-    {
-      name: 'Dominic Tarantino',
-      id: '56121',
-      grade: '8',
-      guardian: 'Francis & Deborah Tarantino',
-      address: '319 Dearborne Ave Blackwood, NJ 08012',
-      school: 'CWL',
-      notes: '',
-      status: 'active',
-      hasPhoto: false
-    },
-    {
-      name: 'Chase Towers',
-      id: '56365',
-      grade: '8',
-      guardian: 'Gary Towers & Kathleen Macaro',
-      address: '32 Annapolis Dr Sicklerville, NJ 08081',
-      school: 'Ann Mullen',
-      notes: '',
-      status: 'active',
-      hasPhoto: false
-    },
-    {
-      name: 'Evelyn Zechman',
-      id: '56366',
-      grade: '8',
-      guardian: 'Michael & Janae Zechman',
-      address: '1 Blue Spruce Dr Sicklerville, NJ 08081',
-      school: 'Ann Mullen',
-      notes: '',
-      status: 'active',
-      hasPhoto: false
-    },
-    {
-      name: 'Alyssa McDonel',
-      id: '56641',
-      grade: '7',
-      guardian: 'Robert & Bernadette McDonel',
-      address: '29 Brewer Ave Apt 1 Blackwood, NJ 08012',
-      school: 'Glenn Landing',
-      notes: '',
-      status: 'active',
-      hasPhoto: false
-    }
-  ];
+const secretBase64 = "Z2hvc3Q5OQ=="; // ghost99 in base64
+let unlocked = false;
 
-  const q = document.getElementById('query');
-  const results = document.getElementById('results');
-  const dbList = document.getElementById('dbList');
-  const overlay = document.getElementById('overlay');
-  const drawer = document.getElementById('drawer');
-  const photoEl = document.getElementById('d_photo');
+const students = [
+  { name:'Thomas J. Graham', id:'56254', grade:'8', guardian:'Gerald Graham / Denise Schellenger', address:'27 Erial Rd Blackwood, NJ 08012', school:'CWL', notes:'no additional flags', status:'active', hasPhoto:true },
+  { name:'Lucas Johnson', id:'54698', grade:'8', guardian:'Bryan Johnson / Lisa Johnson', address:'108 West Ct Blackwood, NJ 08012', school:'CWL', notes:'no additional flags', status:'active', hasPhoto:true },
+  { name:'Ezra J. Cook', id:'56431', grade:'8', guardian:'LaShaya Ford', address:'502 Harbor Ln Sicklerville, NJ 08081', school:'CWL', notes:'Football Team', status:'active', hasPhoto:false },
+  { name:'Kinsley Alex Boguszewski', id:'56847', grade:'7', guardian:'Daniel & Dana Boguszewski', address:'1081 Kearsley Rd Sicklerville, NJ 08081', school:'Ann Mullen', notes:'', status:'active', hasPhoto:false },
+  { name:'Giuliana G McDade', id:'56903', grade:'8', guardian:'Jermain & Melissa McDade', address:'3 Mulberry St Sicklerville, NJ 08081', school:'Ann Mullen', notes:'', status:'active', hasPhoto:false },
+  { name:'Dominic Tarantino', id:'56121', grade:'8', guardian:'Francis & Deborah Tarantino', address:'319 Dearborne Ave Blackwood, NJ 08012', school:'CWL', notes:'', status:'active', hasPhoto:false },
+  { name:'Chase Towers', id:'56365', grade:'8', guardian:'Gary Towers & Kathleen Macaro', address:'32 Annapolis Dr Sicklerville, NJ 08081', school:'Ann Mullen', notes:'', status:'active', hasPhoto:false },
+  { name:'Evelyn Zechman', id:'56366', grade:'8', guardian:'Michael & Janae Zechman', address:'1 Blue Spruce Dr Sicklerville, NJ 08081', school:'Ann Mullen', notes:'', status:'active', hasPhoto:false },
+  { name:'Alyssa McDonel', id:'56641', grade:'7', guardian:'Robert & Bernadette McDonel', address:'29 Brewer Ave Apt 1 Blackwood, NJ 08012', school:'Glenn Landing', notes:'', status:'active', hasPhoto:false }
+];
 
-  function emailFor(name) {
-    const p = name.toLowerCase().split(' ');
-    return `${p[p.length-1]}.${p[0]}@gloucestertownshipschools.org`;
+const q = document.getElementById('query');
+const results = document.getElementById('results');
+const dbList = document.getElementById('dbList');
+const overlay = document.getElementById('overlay');
+const drawer = document.getElementById('drawer');
+const photoEl = document.getElementById('d_photo');
+
+function emailFor(name){
+  const p = name.toLowerCase().split(' ');
+  return `${p[p.length-1]}.${p[0]}@gloucestertownshipschools.org`;
+}
+
+function openDrawer(s){
+  document.getElementById('d_name').textContent = s.name;
+  document.getElementById('d_id').textContent = s.id;
+  document.getElementById('d_status').textContent = s.status;
+  document.getElementById('d_grade').textContent = s.grade;
+  document.getElementById('d_guardian').textContent = s.guardian || '—';
+  document.getElementById('d_address').textContent = s.address || '—';
+  document.getElementById('d_school').textContent = s.school || '—';
+  document.getElementById('d_notes').textContent = s.notes || '—';
+  document.getElementById('d_email').textContent = emailFor(s.name);
+  document.getElementById('d_pass').textContent = `Password: GTps${s.id}`;
+
+  if(s.hasPhoto){
+    photoEl.src = `${s.id}.jpg`;
+    photoEl.onerror = () => { photoEl.src = ''; };
+    photoEl.style.display = 'block';
+  } else {
+    photoEl.style.display = 'none';
   }
 
-  function openDrawer(s) {
-    document.getElementById('d_name').textContent = s.name;
-    document.getElementById('d_id').textContent = s.id;
-    document.getElementById('d_status').textContent = s.status;
-    document.getElementById('d_grade').textContent = s.grade;
-    document.getElementById('d_guardian').textContent = s.guardian || '—';
-    document.getElementById('d_address').textContent = s.address || '—';
-    document.getElementById('d_school').textContent = s.school || '—';
-    document.getElementById('d_notes').textContent = s.notes || '—';
-    document.getElementById('d_email').textContent = emailFor(s.name);
-    document.getElementById('d_pass').textContent = `Password: GTps${s.id}`;
+  overlay.classList.add('active');
+  drawer.classList.add('active');
+}
 
-    if(s.hasPhoto){
-      photoEl.src = `${s.id}.jpg`;
-      photoEl.onerror = () => { photoEl.src = ''; };
-      photoEl.style.display = 'block';
+function closeDrawer(){
+  overlay.classList.remove('active');
+  drawer.classList.remove('active');
+}
+
+function makeRow(s){
+  const row = document.createElement('div');
+  row.className = 'row';
+  row.innerHTML = `<span>${s.name}</span><span class="tag">${s.id}</span>`;
+  row.onclick = () => openDrawer(s);
+  return row;
+}
+
+function renderDB(){
+  dbList.innerHTML = '';
+  let list = unlocked ? students : students.filter(s => s.hasPhoto);
+  list.forEach(s => dbList.appendChild(makeRow(s)));
+}
+
+function renderSearch(){
+  const v = (q.value || '').toLowerCase().trim();
+  results.innerHTML = '';
+  let list = unlocked ? students : students.filter(s => s.hasPhoto);
+  if(!v) return;
+  const hits = list.filter(s => s.name.toLowerCase().includes(v) || s.id.includes(v));
+  if(!hits.length){
+    results.innerHTML = '<div class="row"><span>no match</span><span class="tag">0</span></div>';
+    return;
+  }
+  hits.forEach(s => results.appendChild(makeRow(s)));
+}
+
+// check for secret unlock
+document.addEventListener('keydown', e => {
+  if(e.key === 'u'){ // press 'u' to unlock prompt
+    const inp = prompt("Enter password to unlock full list:");
+    if(inp && btoa(inp) === secretBase64){
+      unlocked = true;
+      alert("Full student list unlocked!");
+      renderDB();
     } else {
-      photoEl.style.display = 'none';
+      alert("Wrong password");
     }
-
-    overlay.classList.add('active');
-    drawer.classList.add('active');
   }
+});
 
-  function closeDrawer() {
-    overlay.classList.remove('active');
-    drawer.classList.remove('active');
-  }
+q.addEventListener('input', renderSearch);
+renderDB();
 
-  overlay.onclick = closeDrawer;
-  document.getElementById('close').onclick = closeDrawer;
-
-  function makeRow(s) {
-    const row = document.createElement('div');
-    row.className = 'row';
-    row.innerHTML = `<span>${s.name}</span><span class="tag">${s.id}</span>`;
-    row.onclick = () => openDrawer(s);
-    return row;
-  }
-
-  function renderSearch() {
-    const v = (q.value || '').toLowerCase().trim();
-    results.innerHTML = '';
-    if (!v) return;
-    const hits = students.filter(s =>
-      s.name.toLowerCase().includes(v) || s.id.includes(v)
-    );
-    if (!hits.length) {
-      results.innerHTML =
-        '<div class="row"><span>no match</span><span class="tag">0</span></div>';
-      return;
-    }
-    hits.forEach(s => results.appendChild(makeRow(s)));
-  }
-
-  function renderDB() {
-    dbList.innerHTML = '';
-    students.forEach(s => dbList.appendChild(makeRow(s)));
-  }
-
-  q.addEventListener('input', renderSearch);
-  renderDB();
-
-  document.querySelectorAll('.btn').forEach(b => {
-    b.onclick = () => {
-      document.querySelectorAll('.btn').forEach(x => x.classList.remove('active'));
-      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-      b.classList.add('active');
-      document.getElementById(b.dataset.tab).classList.add('active');
-    };
-  });
+overlay.onclick = closeDrawer;
+document.getElementById('close').onclick = closeDrawer;
 </script>
+
+</body>
+</html>
