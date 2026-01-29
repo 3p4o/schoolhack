@@ -42,9 +42,6 @@ button { background:#444; border:none; padding:5px 10px; color:#eee; cursor:poin
 </div>
 
 <script>
-const secretBase64 = "Z2hvc3Q5OQ=="; // ghost99 in base64
-let unlocked = false;
-
 const students = [
   { name:'Thomas J. Graham', id:'56254', grade:'8', guardian:'Gerald Graham / Denise Schellenger', address:'27 Erial Rd Blackwood, NJ 08012', school:'CWL', notes:'no additional flags', status:'active', hasPhoto:true },
   { name:'Lucas Johnson', id:'54698', grade:'8', guardian:'Bryan Johnson / Lisa Johnson', address:'108 West Ct Blackwood, NJ 08012', school:'CWL', notes:'no additional flags', status:'active', hasPhoto:true },
@@ -64,25 +61,40 @@ const overlay = document.getElementById('overlay');
 const drawer = document.getElementById('drawer');
 const photoEl = document.getElementById('d_photo');
 
+function mask(s){
+  return s.hasPhoto ? s : {
+    ...s,
+    id:'*******',
+    grade:'*******',
+    guardian:'*******',
+    address:'*******',
+    school:'*******',
+    notes:'*******',
+    status:'*******',
+    email:'*******',
+    password:'*******'
+  };
+}
+
 function emailFor(name){
-  const p = name.toLowerCase().split(' ');
-  return `${p[p.length-1]}.${p[0]}@gloucestertownshipschools.org`;
+  return `${name.toLowerCase().split(' ').slice(-1)[0]}.${name.toLowerCase().split(' ')[0]}@gloucestertownshipschools.org`;
 }
 
 function openDrawer(s){
-  document.getElementById('d_name').textContent = s.name;
-  document.getElementById('d_id').textContent = s.id;
-  document.getElementById('d_status').textContent = s.status;
-  document.getElementById('d_grade').textContent = s.grade;
-  document.getElementById('d_guardian').textContent = s.guardian || '—';
-  document.getElementById('d_address').textContent = s.address || '—';
-  document.getElementById('d_school').textContent = s.school || '—';
-  document.getElementById('d_notes').textContent = s.notes || '—';
-  document.getElementById('d_email').textContent = emailFor(s.name);
-  document.getElementById('d_pass').textContent = `Password: GTps${s.id}`;
+  const student = s.hasPhoto ? s : mask(s);
+  document.getElementById('d_name').textContent = student.name;
+  document.getElementById('d_id').textContent = student.id;
+  document.getElementById('d_status').textContent = student.status;
+  document.getElementById('d_grade').textContent = student.grade;
+  document.getElementById('d_guardian').textContent = student.guardian;
+  document.getElementById('d_address').textContent = student.address;
+  document.getElementById('d_school').textContent = student.school;
+  document.getElementById('d_notes').textContent = student.notes;
+  document.getElementById('d_email').textContent = student.hasPhoto ? emailFor(student.name) : '*******';
+  document.getElementById('d_pass').textContent = student.hasPhoto ? `Password: GTps${student.id}` : '*******';
 
-  if(s.hasPhoto){
-    photoEl.src = `${s.id}.jpg`;
+  if(student.hasPhoto){
+    photoEl.src = `${student.id}.jpg`;
     photoEl.onerror = () => { photoEl.src = ''; };
     photoEl.style.display = 'block';
   } else {
@@ -101,43 +113,27 @@ function closeDrawer(){
 function makeRow(s){
   const row = document.createElement('div');
   row.className = 'row';
-  row.innerHTML = `<span>${s.name}</span><span class="tag">${s.id}</span>`;
+  row.innerHTML = `<span>${s.name}</span><span class="tag">${s.hasPhoto ? s.id : '*******'}</span>`;
   row.onclick = () => openDrawer(s);
   return row;
 }
 
 function renderDB(){
   dbList.innerHTML = '';
-  let list = unlocked ? students : students.filter(s => s.hasPhoto);
-  list.forEach(s => dbList.appendChild(makeRow(s)));
+  students.forEach(s => dbList.appendChild(makeRow(s)));
 }
 
 function renderSearch(){
   const v = (q.value || '').toLowerCase().trim();
   results.innerHTML = '';
-  let list = unlocked ? students : students.filter(s => s.hasPhoto);
   if(!v) return;
-  const hits = list.filter(s => s.name.toLowerCase().includes(v) || s.id.includes(v));
+  const hits = students.filter(s => s.name.toLowerCase().includes(v) || (s.hasPhoto ? s.id.includes(v) : false));
   if(!hits.length){
     results.innerHTML = '<div class="row"><span>no match</span><span class="tag">0</span></div>';
     return;
   }
   hits.forEach(s => results.appendChild(makeRow(s)));
 }
-
-// check for secret unlock
-document.addEventListener('keydown', e => {
-  if(e.key === 'u'){ // press 'u' to unlock prompt
-    const inp = prompt("Enter password to unlock full list:");
-    if(inp && btoa(inp) === secretBase64){
-      unlocked = true;
-      alert("Full student list unlocked!");
-      renderDB();
-    } else {
-      alert("Wrong password");
-    }
-  }
-});
 
 q.addEventListener('input', renderSearch);
 renderDB();
