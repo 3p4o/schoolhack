@@ -2,209 +2,167 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Student Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Portal</title>
 <style>
-/* RESET & BODY */
-body,html{margin:0;padding:0;font-family:'Segoe UI',sans-serif;background:#0d0d0d;color:#eee;overflow-x:hidden;}
-h1,h2,p{margin:0;}
+  /* ====== RESET & BASIC ====== */
+  *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif;}
+  html,body{width:100%;height:100%;overflow:hidden;background:#0a0014;color:#fff;}
+  body.light{background:#f5f5f7;color:#0b0b0b;}
 
-/* SIDEBAR */
-#sidemenu{position:fixed;top:0;left:0;height:100%;width:60px;background:#111;transition:width 0.3s;z-index:1000;overflow:hidden;}
-#sidemenu:hover{width:220px;}
-.menu-item{padding:20px;display:flex;align-items:center;cursor:pointer;transition:all 0.3s;font-weight:bold;}
-.menu-item:hover,.menu-item.active{background:#1b1b1b;color:#4caf50;}
-.menu-item span{margin-left:15px;opacity:0;transition:opacity 0.3s;}
-#sidemenu:hover .menu-item span{opacity:1;}
+  /* ====== LAYOUT ====== */
+  .sidebar{
+    width:240px;height:100%;background:#12001f;display:flex;flex-direction:column;padding:20px;
+    flex-shrink:0;
+  }
+  body.light .sidebar{background:#fff;color:#000;}
+  .sidebar .brand{font-size:1.5rem;font-weight:700;margin-bottom:30px;color:#b84dff;}
+  .sidebar .nav-item{padding:12px;border-radius:8px;cursor:pointer;margin-bottom:8px;transition:0.2s;}
+  .sidebar .nav-item:hover{background:rgba(255,255,255,0.1);}
+  .sidebar .nav-item.active{background:rgba(184,77,255,0.2);}
+  
+  .main{flex:1;height:100%;display:flex;flex-direction:column;overflow:auto;}
+  .header{padding:20px;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;justify-content:space-between;align-items:center;}
+  body.light .header{border-color:rgba(0,0,0,0.1);}
+  .header h1{font-size:1.8rem;background:linear-gradient(135deg,#b84dff,#a200ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  body.light .header h1{background:none;color:#000;}
+  .controls{display:flex;gap:10px;}
+  .controls input{padding:8px 14px;border-radius:20px;border:none;outline:none;background:#1b001f;color:#fff;}
+  body.light .controls input{background:#eee;color:#000;}
+  .controls button{padding:8px 16px;border:none;border-radius:8px;background:#b84dff;color:#fff;cursor:pointer;}
+  .controls button:hover{opacity:0.9;}
 
-/* MAIN */
-#main{margin-left:60px;transition:margin-left 0.3s;padding:20px;}
-#sidemenu:hover ~ #main{margin-left:220px;}
+  /* ====== CONTENT ====== */
+  .page{flex:1;padding:20px;display:none;overflow:auto;}
+  .page.active{display:block;}
+  .student-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px;}
+  .student-card{background:#12001f;padding:12px;border-radius:12px;text-align:center;cursor:pointer;transition:0.2s;}
+  body.light .student-card{background:#fff;color:#000;}
+  .student-card img{width:100%;height:200px;object-fit:cover;border-radius:8px;margin-bottom:10px;}
+  .student-card .name{font-weight:600;font-size:1rem;margin-bottom:6px;}
+  .student-card .id{font-size:0.85rem;color:#ccc;}
+  body.light .student-card .id{color:#555;}
 
-/* DASHBOARD / STATS */
-.card-container{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;margin-bottom:30px;}
-.card{background:#1a1a1a;padding:30px;border-radius:15px;text-align:center;box-shadow:0 0 30px #000;transition:all 0.3s;display:flex;flex-direction:column;justify-content:center;align-items:center;}
-.card:hover{transform:scale(1.05);box-shadow:0 0 40px #4caf50;}
-.card h2{font-size:3em;color:#4caf50;}
-.card p{margin-top:10px;font-size:1.2em;color:#aaa;}
-
-/* CONTROLS */
-.controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
-.controls input,.controls select{flex:1;padding:15px;border-radius:10px;border:none;background:#1a1a1a;color:#eee;font-size:1em;}
-
-/* STUDENT LIST */
-#dbList,#results{max-width:1200px;margin:0 auto;}
-.row{padding:20px;border-bottom:1px solid #222;cursor:pointer;display:flex;justify-content:space-between;background:#111;border-radius:10px;margin-bottom:10px;transition:all 0.2s;}
-.row:hover{background:#1b1b1b;box-shadow:0 0 15px #4caf50;}
-
-/* DRAWER */
-#overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#000c;display:none;z-index:2000;}
-#overlay.active{display:block;}
-#drawer{position:fixed;right:0;top:0;width:400px;height:100%;background:#111;padding:30px;display:none;overflow:auto;box-shadow:-5px 0 30px #000;z-index:2100;transition:all 0.3s;border-left:2px solid #4caf50;}
-#drawer.active{display:block;}
-#d_photo{width:100%;display:block;margin-bottom:15px;border-radius:10px;}
-
-/* STATS BARS */
-.stat-bar{height:30px;background:#222;border-radius:15px;overflow:hidden;margin:15px 0;}
-.stat-fill{height:100%;background:#4caf50;text-align:right;padding-right:10px;box-sizing:border-box;color:#000;font-weight:bold;transition:width 0.6s;}
-
-/* TABS */
-.tab-content{display:block;}
-.tab-content:not(.active){display:none;}
-
-/* HEADER */
-h1{margin-bottom:20px;font-size:2.5em;color:#4caf50;}
+  /* ====== MODAL ====== */
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:0.3s;}
+  .modal.open{opacity:1;pointer-events:auto;}
+  .modal .content{background:#1b001f;padding:20px;border-radius:16px;width:90%;max-width:400px;text-align:center;position:relative;}
+  body.light .modal .content{background:#fff;color:#000;}
+  .modal .close{position:absolute;top:12px;right:12px;cursor:pointer;font-size:20px;font-weight:700;}
+  .modal .login-info{margin-top:20px;padding:10px;background:rgba(255,255,255,0.05);border-radius:10px;}
+  body.light .modal .login-info{background:#eee;}
 </style>
 </head>
 <body>
+  <nav class="sidebar">
+    <div class="brand">GLOUCESTER PORTAL</div>
+    <div class="nav-item active" data-target="students">Students</div>
+    <div class="nav-item" data-target="search">Search</div>
+    <div class="nav-item" data-target="settings">Settings</div>
+  </nav>
 
-<div id="sidemenu">
-  <div class="menu-item active" data-tab="dashboard">🏠<span>Dashboard</span></div>
-  <div class="menu-item" data-tab="statistics">📊<span>Statistics</span></div>
-  <div class="menu-item" data-tab="students">🧑‍🎓<span>Student List</span></div>
-</div>
+  <main class="main">
+    <header class="header">
+      <h1>Student Portal</h1>
+      <div class="controls">
+        <input type="text" placeholder="Search by name or ID" id="searchInput">
+        <button id="searchBtn">Search</button>
+      </div>
+    </header>
 
-<div id="main">
-  <div id="dashboard" class="tab-content active">
-    <h1>Dashboard</h1>
-    <div class="card-container">
-      <div class="card"><h2 id="total">0</h2><p>Total Students</p></div>
-      <div class="card"><h2 id="grade7">0</h2><p>Grade 7</p></div>
-      <div class="card"><h2 id="grade8">0</h2><p>Grade 8</p></div>
+    <!-- STUDENTS PAGE -->
+    <section class="page active" id="students">
+      <div class="student-grid" id="studentGrid">
+        <!-- JS injects student cards -->
+      </div>
+    </section>
+
+    <!-- SEARCH PAGE -->
+    <section class="page" id="search">
+      <div class="student-grid" id="searchGrid"></div>
+    </section>
+
+    <!-- SETTINGS PAGE -->
+    <section class="page" id="settings">
+      <p>Settings will go here (theme toggle etc)</p>
+      <button id="themeBtn">Toggle Theme</button>
+    </section>
+  </main>
+
+  <!-- MODAL -->
+  <div class="modal" id="modal">
+    <div class="content">
+      <div class="close" id="modalClose">&times;</div>
+      <h2 id="modalName">Student Name</h2>
+      <p class="login-info" id="modalLogin">email: lastname.first@gloucestertownshipschools.org<br>Password: GTps{id}</p>
     </div>
   </div>
-
-  <div id="statistics" class="tab-content">
-    <h1>Statistics</h1>
-    <div id="statContent"></div>
-  </div>
-
-  <div id="students" class="tab-content">
-    <div class="controls">
-      <input id="query" placeholder="Search by name...">
-      <select id="gradeFilter">
-        <option value="all">All Grades</option>
-        <option value="7">Grade 7</option>
-        <option value="8">Grade 8</option>
-      </select>
-    </div>
-    <div id="results"></div>
-    <div id="dbList"></div>
-  </div>
-</div>
-
-<div id="overlay"></div>
-<div id="drawer">
-  <img id="d_photo">
-  <p>Name: <span id="d_name"></span></p>
-  <p>ID: <span id="d_id"></span></p>
-  <p>Status: <span id="d_status"></span></p>
-  <p>Grade: <span id="d_grade"></span></p>
-  <p>Guardian: <span id="d_guardian"></span></p>
-  <p>Address: <span id="d_address"></span></p>
-  <p>School: <span id="d_school"></span></p>
-  <p>Notes: <span id="d_notes"></span></p>
-  <p>Email: <span id="d_email"></span></p>
-  <p>Password: <span id="d_pass"></span></p>
-  <button id="close">Close</button>
-</div>
 
 <script>
-// STUDENTS DATA
-const students=[
-  {name:'Thomas J. Graham',id:'56254',grade:'8',guardian:'Gerald Graham / Denise Schellenger',address:'27 Erial Rd Blackwood, NJ 08012',school:'CWL',notes:'no additional flags',status:'active',hasPhoto:true},
-  {name:'Lucas Johnson',id:'54698',grade:'8',guardian:'Bryan Johnson / Lisa Johnson',address:'108 West Ct Blackwood, NJ 08012',school:'CWL',notes:'no additional flags',status:'active',hasPhoto:true},
-  {name:'Ezra J. Cook',id:'56431',grade:'8',guardian:'LaShaya Ford',address:'502 Harbor Ln Sicklerville, NJ 08081',school:'CWL',notes:'Football Team',status:'active',hasPhoto:false},
-  {name:'Kinsley Alex Boguszewski',id:'56847',grade:'7',guardian:'Daniel & Dana Boguszewski',address:'1081 Kearsley Rd Sicklerville, NJ 08081',school:'Ann Mullen',notes:'',status:'active',hasPhoto:false},
-  {name:'Giuliana G McDade',id:'56903',grade:'8',guardian:'Jermain & Melissa McDade',address:'3 Mulberry St Sicklerville, NJ 08081',school:'Ann Mullen',notes:'',status:'active',hasPhoto:false},
-  {name:'Dominic Tarantino',id:'56121',grade:'8',guardian:'Francis & Deborah Tarantino',address:'319 Dearborne Ave Blackwood, NJ 08012',school:'CWL',notes:'',status:'active',hasPhoto:false},
-  {name:'Chase Towers',id:'56365',grade:'8',guardian:'Gary Towers & Kathleen Macaro',address:'32 Annapolis Dr Sicklerville, NJ 08081',school:'Ann Mullen',notes:'',status:'active',hasPhoto:false},
-  {name:'Evelyn Zechman',id:'56366',grade:'8',guardian:'Michael & Janae Zechman',address:'1 Blue Spruce Dr Sicklerville, NJ 08081',school:'Ann Mullen',notes:'',status:'active',hasPhoto:false},
-  {name:'Alyssa McDonel',id:'56641',grade:'7',guardian:'Robert & Bernadette McDonel',address:'29 Brewer Ave Apt 1 Blackwood, NJ 08012',school:'Glenn Landing',notes:'',status:'active',hasPhoto:false}
-];
+  const students = [
+    {id: "40001", name: "John Doe"},
+    {id: "50002", name: "Jane Smith"},
+    {id: "60003", name: "Michael Brown"},
+    {id: "40004", name: "Emily Davis"},
+    {id: "50005", name: "Chris Johnson"}
+  ];
 
-const q=document.getElementById('query');
-const results=document.getElementById('results');
-const dbList=document.getElementById('dbList');
-const overlay=document.getElementById('overlay');
-const drawer=document.getElementById('drawer');
-const photoEl=document.getElementById('d_photo');
-const gradeFilter=document.getElementById('gradeFilter');
+  const studentGrid = document.getElementById('studentGrid');
+  const searchGrid = document.getElementById('searchGrid');
+  const modal = document.getElementById('modal');
+  const modalName = document.getElementById('modalName');
+  const modalLogin = document.getElementById('modalLogin');
+  const modalClose = document.getElementById('modalClose');
 
-function mask(s){if(s.hasPhoto) return s;return {...s,id:'*******',guardian:'*******',address:'*******',notes:'*******',status:'*******',email:'*******',password:'*******'};}
-function emailFor(name){return `${name.toLowerCase().split(' ').slice(-1)[0]}.${name.toLowerCase().split(' ')[0]}@gloucestertownshipschools.org`;}
+  function renderStudents(grid, list){
+    grid.innerHTML = '';
+    list.forEach(s=>{
+      const card = document.createElement('div');
+      card.className = 'student-card';
+      card.innerHTML = `
+        <img src="${s.id}.jpg" alt="${s.name}">
+        <div class="name">${s.name}</div>
+        <div class="id">${s.id}</div>
+      `;
+      card.onclick = ()=>{
+        modal.classList.add('open');
+        modalName.textContent = s.name;
+        modalLogin.innerHTML = `email: ${s.name.split(' ').map(x=>x.toLowerCase()).join('.')}@gloucestertownshipschools.org<br>Password: GTps${s.id}`;
+      };
+      grid.appendChild(card);
+    });
+  }
 
-// DRAWER
-function openDrawer(s){
-  const student=mask(s);
-  document.getElementById('d_name').textContent=student.name;
-  document.getElementById('d_id').textContent=student.id;
-  document.getElementById('d_status').textContent=student.status;
-  document.getElementById('d_grade').textContent=student.grade;
-  document.getElementById('d_guardian').textContent=student.guardian;
-  document.getElementById('d_address').textContent=student.address;
-  document.getElementById('d_school').textContent=student.school;
-  document.getElementById('d_notes').textContent=student.notes;
-  document.getElementById('d_email').textContent=student.hasPhoto?emailFor(student.name):'*******';
-  document.getElementById('d_pass').textContent=student.hasPhoto?`Password: GTps${student.id}`:'*******';
-  if(student.hasPhoto){photoEl.src=`${student.id}.jpg`;photoEl.style.display='block';}else photoEl.style.display='none';
-  overlay.classList.add('active');drawer.classList.add('active');
-}
-function closeDrawer(){overlay.classList.remove('active');drawer.classList.remove('active');}
+  renderStudents(studentGrid, students);
 
-// STUDENT LIST
-function makeRow(s){
-  const student=mask(s);
-  const row=document.createElement('div');row.className='row';
-  row.innerHTML=`<span>${student.name}</span><span>${student.hasPhoto?student.id:'*******'}</span>`;
-  row.onclick=()=>openDrawer(s);return row;
-}
-function renderDB(){
-  dbList.innerHTML='';let list=students;
-  if(gradeFilter.value!=='all') list=list.filter(s=>s.grade===gradeFilter.value);
-  list.forEach(s=>dbList.appendChild(makeRow(s));
-  renderStats(list);
-}
-function renderSearch(){
-  const v=(q.value||'').toLowerCase().trim();results.innerHTML='';let list=students;
-  if(gradeFilter.value!=='all') list=list.filter(s=>s.grade===gradeFilter.value);
-  if(!v) return;
-  const hits=list.filter(s=>s.name.toLowerCase().includes(v));
-  if(!hits.length){results.innerHTML='<div class="row"><span>no match</span></div>';return;}
-  hits.forEach(s=>results.appendChild(makeRow(s));
-}
+  modalClose.onclick = ()=>modal.classList.remove('open');
 
-// STATS
-function renderStats(list){
-  const total=students.length;
-  const grade7Count=students.filter(s=>s.grade==='7').length;
-  const grade8Count=students.filter(s=>s.grade==='8').length;
-  document.getElementById('total').textContent=total;
-  document.getElementById('grade7').textContent=grade7Count;
-  document.getElementById('grade8').textContent=grade8Count;
-  document.getElementById('statContent').innerHTML=`
-    <p>Grade 7: ${grade7Count} (${((grade7Count/total)*100).toFixed(1)}%)</p>
-    <div class="stat-bar"><div class="stat-fill" style="width:${(grade7Count/total)*100}%"></div></div>
-    <p>Grade 8: ${grade8Count} (${((grade8Count/total)*100).toFixed(1)}%)</p>
-    <div class="stat-bar"><div class="stat-fill" style="width:${(grade8Count/total)*100}%"></div></div>
-  `;
-}
+  // NAVIGATION
+  document.querySelectorAll('.nav-item').forEach(nav=>{
+    nav.addEventListener('click',()=>{
+      document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+      nav.classList.add('active');
+      const target = nav.dataset.target;
+      document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+      document.getElementById(target).classList.add('active');
+    });
+  });
 
-// MENU TAB SWITCHING
-document.querySelectorAll('.menu-item').forEach(item=>{
-  item.onclick=()=>{
-    document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-    document.getElementById(item.dataset.tab).classList.add('active');
-    document.querySelectorAll('.menu-item').forEach(i=>i.classList.remove('active'));
-    item.classList.add('active');
-  };
-});
+  // SEARCH
+  const searchInput = document.getElementById('searchInput');
+  const searchBtn = document.getElementById('searchBtn');
+  searchBtn.addEventListener('click',()=>{
+    const term = searchInput.value.toLowerCase();
+    const results = students.filter(s=>s.name.toLowerCase().includes(term) || s.id.includes(term));
+    renderStudents(searchGrid, results);
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById('search').classList.add('active');
+  });
 
-q.addEventListener('input',renderSearch);
-gradeFilter.addEventListener('change',renderDB);
-renderDB();
-overlay.onclick=closeDrawer;
-document.getElementById('close').onclick=closeDrawer;
+  // THEME TOGGLE
+  document.getElementById('themeBtn').addEventListener('click',()=>{
+    document.body.classList.toggle('light');
+  });
 </script>
-
 </body>
 </html>
