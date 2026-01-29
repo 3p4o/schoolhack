@@ -1,20 +1,103 @@
 <script>
   const students = [
     {
-      name: 'Thomas Graham',
+      name: 'Thomas J. Graham',
       id: '56254',
+      grade: '8',
+      guardian: 'Gerald Graham / Denise Schellenger',
+      address: '27 Erial Rd Blackwood, NJ 08012',
+      school: 'CWL',
+      notes: 'no additional flags',
       status: 'active',
-      grade: '—',
-      dob: '—',
-      notes: 'no additional flags'
+      hasPhoto: true
     },
     {
       name: 'Lucas Johnson',
       id: '54698',
+      grade: '8',
+      guardian: 'Bryan Johnson / Lisa Johnson',
+      address: '108 West Ct Blackwood, NJ 08012',
+      school: 'CWL',
+      notes: 'no additional flags',
       status: 'active',
-      grade: '—',
-      dob: '—',
-      notes: 'no additional flags'
+      hasPhoto: true
+    },
+    {
+      name: 'Ezra J. Cook',
+      id: '56431',
+      grade: '8',
+      guardian: 'LaShaya Ford',
+      address: '502 Harbor Ln Sicklerville, NJ 08081',
+      school: 'CWL',
+      notes: 'Football Team',
+      status: 'active',
+      hasPhoto: false
+    },
+    {
+      name: 'Kinsley Alex Boguszewski',
+      id: '56847',
+      grade: '7',
+      guardian: 'Daniel & Dana Boguszewski',
+      address: '1081 Kearsley Rd Sicklerville, NJ 08081',
+      school: 'Ann Mullen',
+      notes: '',
+      status: 'active',
+      hasPhoto: false
+    },
+    {
+      name: 'Giuliana G McDade',
+      id: '56903',
+      grade: '8',
+      guardian: 'Jermain & Melissa McDade',
+      address: '3 Mulberry St Sicklerville, NJ 08081',
+      school: 'Ann Mullen',
+      notes: '',
+      status: 'active',
+      hasPhoto: false
+    },
+    {
+      name: 'Dominic Tarantino',
+      id: '56121',
+      grade: '8',
+      guardian: 'Francis & Deborah Tarantino',
+      address: '319 Dearborne Ave Blackwood, NJ 08012',
+      school: 'CWL',
+      notes: '',
+      status: 'active',
+      hasPhoto: false
+    },
+    {
+      name: 'Chase Towers',
+      id: '56365',
+      grade: '8',
+      guardian: 'Gary Towers & Kathleen Macaro',
+      address: '32 Annapolis Dr Sicklerville, NJ 08081',
+      school: 'Ann Mullen',
+      notes: '',
+      status: 'active',
+      hasPhoto: false
+    },
+    {
+      name: 'Evelyn Zechman',
+      id: '56366',
+      grade: '8',
+      guardian: 'Michael & Janae Zechman',
+      address: '1 Blue Spruce Dr Sicklerville, NJ 08081',
+      school: 'Ann Mullen',
+      notes: '',
+      status: 'active',
+      hasPhoto: false
+    },
+    {
+      name: 'Alyssa McDonel',
+      id: '56641',
+      grade: '7',
+      guardian: 'Robert & Bernadette McDonel',
+      address: '29 Brewer Ave Apt 1 Blackwood, NJ 08012',
+      school: 'Glenn Landing',
+      notes: '',
+      status: 'active',
+      hasPhoto: false
     }
   ];
 
@@ -35,13 +118,20 @@
     document.getElementById('d_id').textContent = s.id;
     document.getElementById('d_status').textContent = s.status;
     document.getElementById('d_grade').textContent = s.grade;
-    document.getElementById('d_dob').textContent = s.dob;
-    document.getElementById('d_notes').textContent = s.notes;
+    document.getElementById('d_guardian').textContent = s.guardian || '—';
+    document.getElementById('d_address').textContent = s.address || '—';
+    document.getElementById('d_school').textContent = s.school || '—';
+    document.getElementById('d_notes').textContent = s.notes || '—';
     document.getElementById('d_email').textContent = emailFor(s.name);
     document.getElementById('d_pass').textContent = `Password: GTps${s.id}`;
 
-    photoEl.src = `${s.id}.jpg`;
-    photoEl.onerror = () => { photoEl.src = ''; };
+    if(s.hasPhoto){
+      photoEl.src = `${s.id}.jpg`;
+      photoEl.onerror = () => { photoEl.src = ''; };
+      photoEl.style.display = 'block';
+    } else {
+      photoEl.style.display = 'none';
+    }
 
     overlay.classList.add('active');
     drawer.classList.add('active');
