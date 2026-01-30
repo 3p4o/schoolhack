@@ -24,7 +24,7 @@ nav button{
   cursor:pointer;
 }
 section{ padding:20px }
-input{
+input,button{
   width:100%;
   background:#111;
   border:1px solid #333;
@@ -39,53 +39,99 @@ input{
   background:#0d0d0d;
 }
 .blur{
-  filter:blur(6px);
+  filter:blur(7px);
   user-select:none;
 }
 .hidden{ display:none }
 .small{ color:#777; font-size:12px }
+.log{
+  border-top:1px solid #222;
+  margin-top:20px;
+  padding-top:10px;
+  font-size:12px;
+  color:#aaa;
+  word-break:break-all;
+}
 </style>
 </head>
 <body>
 
 <header>
   <h2>school intel database</h2>
-  <div class="small">fictional simulation • training environment</div>
+  <div class="small">offline simulation • base64 encoded datastore</div>
   <nav id="tabs" class="hidden">
     <button onclick="showTab('db')">database</button>
-    <button onclick="showTab('stats')">statistics</button>
+    <button onclick="showTab('services')">services</button>
   </nav>
 </header>
 
 <section id="unlock">
-  <input id="key" placeholder="access key">
+  <input id="key" placeholder="base64">
   <button onclick="unlock()">unlock</button>
 </section>
 
 <section id="db" class="hidden">
-  <input id="search" placeholder="search name / school / grade" oninput="render()">
+  <input id="search" placeholder="base64 search" oninput="render()">
   <div id="list"></div>
 </section>
 
-<section id="stats" class="hidden">
-  <div id="statbox"></div>
+<section id="services" class="hidden">
+  <h3>simulated services</h3>
+
+  <div class="card">
+    <b>buy password access</b>
+    <div class="small">encoded credential request</div>
+    <button onclick="requestService('password_access')">buy</button>
+  </div>
+
+  <div class="card">
+    <b>guardian contact dump</b>
+    <div class="small">id-based correlation</div>
+    <button onclick="requestService('guardian_contact')">buy</button>
+  </div>
+
+  <h3>check if you’re breached</h3>
+  <input id="breachInput" placeholder="base64">
+  <button onclick="checkBreach()">check</button>
+  <div id="breachResult" class="small"></div>
+
+  <div class="log" id="logbox"></div>
 </section>
 
 <script>
-const gate = "dTNoNjY2"; // base64 of u3h666
+const gate = btoa("u3h666");
 let unlocked = false;
+const outbound = [];
 
+// every field encoded
 const students = [
-  {first:"ezra",last:"cook",grade:8,school:"cwl",guardian:"lashaya ford",address:"502 harbor ln",id:"56431"},
-  {first:"lucas",last:"johnson",grade:8,school:"cwl",guardian:"bryan / lisa johnson",address:"108 west ct",id:"54698"},
-  {first:"thomas",last:"graham",grade:8,school:"cwl",guardian:"gerald / denise graham",address:"27 erial rd",id:"56254"},
-  {first:"kinsley",last:"boguszewski",grade:7,school:"ann mullen",guardian:"daniel / dana boguszewski",address:"1081 kearsley rd",id:"56847"},
-  {first:"giuliana",last:"mcdade",grade:8,school:"ann mullen",guardian:"jermain / melissa mcdade",address:"3 mulberry st",id:"56903"},
-  {first:"dominic",last:"tarantino",grade:8,school:"cwl",guardian:"francis / deborah tarantino",address:"319 dearborne ave",id:"56121"},
-  {first:"chase",last:"towers",grade:8,school:"ann mullen",guardian:"gary / kathleen towers",address:"32 annapolis dr",id:"56365"},
-  {first:"evelyn",last:"zechman",grade:8,school:"ann mullen",guardian:"michael / janae zechman",address:"1 blue spruce dr",id:"56366"},
-  {first:"alyssa",last:"mcdonel",grade:7,school:"glenn landing",guardian:"robert / bernadette mcdonel",address:"29 brewer ave",id:"56641"},
-  {first:"audriana",last:"graham",grade:8,school:"cwl",guardian:"edward / michelina graham",address:"239 richmond ave",id:"54697"}
+  {
+    first:btoa("ezra"),
+    last:btoa("cook"),
+    school:btoa("cwl"),
+    grade:btoa("8"),
+    guardian:btoa("redacted"),
+    address:btoa("redacted"),
+    id:btoa("56431")
+  },
+  {
+    first:btoa("thomas"),
+    last:btoa("graham"),
+    school:btoa("cwl"),
+    grade:btoa("8"),
+    guardian:btoa("redacted"),
+    address:btoa("redacted"),
+    id:btoa("56254")
+  },
+  {
+    first:btoa("kinsley"),
+    last:btoa("boguszewski"),
+    school:btoa("ann mullen"),
+    grade:btoa("7"),
+    guardian:btoa("redacted"),
+    address:btoa("redacted"),
+    id:btoa("56847")
+  }
 ];
 
 function unlock(){
@@ -95,17 +141,14 @@ function unlock(){
     document.getElementById("tabs").classList.remove("hidden");
     showTab("db");
     render();
-  } else {
-    alert("access denied");
-  }
+  } else alert("access denied");
 }
 
 function showTab(id){
-  ["db","stats"].forEach(t=>{
+  ["db","services"].forEach(t=>{
     document.getElementById(t).classList.add("hidden");
   });
   document.getElementById(id).classList.remove("hidden");
-  if(id==="stats") renderStats();
 }
 
 function render(){
@@ -113,43 +156,57 @@ function render(){
   const list = document.getElementById("list");
   list.innerHTML="";
 
-  students.filter(s=>{
-    return (
-      `${s.first} ${s.last}`.includes(q) ||
-      s.school.includes(q) ||
-      String(s.grade).includes(q)
-    );
-  }).forEach(s=>{
-    const div = document.createElement("div");
-    div.className="card";
-    div.innerHTML=`
-      <b>${s.first} ${s.last}</b><br>
-      <span class="small">${s.school}</span><br><br>
-      <div class="${unlocked?"":"blur"}">
-        grade: ${s.grade}<br>
-        guardian: ${s.guardian}<br>
-        address: ${s.address}<br>
-        id: ${s.id}
-      </div>
-    `;
-    list.appendChild(div);
+  students.forEach(s=>{
+    const name = atob(s.first)+" "+atob(s.last);
+    const school = atob(s.school);
+
+    if(name.toLowerCase().includes(q) || school.includes(q)){
+      const div = document.createElement("div");
+      div.className="card";
+      div.innerHTML=`
+        <b>${name}</b><br>
+        <span class="small">${school}</span><br><br>
+        <div class="blur">
+          grade: ${atob(s.grade)}<br>
+          guardian: ${atob(s.guardian)}<br>
+          address: ${atob(s.address)}<br>
+          id: ${atob(s.id)}
+        </div>
+      `;
+      list.appendChild(div);
+    }
   });
 }
 
-function renderStats(){
-  let bySchool={}, byGrade={};
-  students.forEach(s=>{
-    bySchool[s.school]=(bySchool[s.school]||0)+1;
-    byGrade[s.grade]=(byGrade[s.grade]||0)+1;
-  });
+function requestService(type){
+  const payload = btoa(JSON.stringify({
+    service:type,
+    time:Date.now(),
+    note:"simulation only"
+  }));
+  outbound.push(payload);
+  updateLogs();
+  alert("encoded request queued");
+}
 
-  let out=`total students: ${students.length}<br><br>`;
-  out+="by school:<br>";
-  for(let s in bySchool) out+=`${s}: ${bySchool[s]}<br>`;
-  out+="<br>by grade:<br>";
-  for(let g in byGrade) out+=`grade ${g}: ${byGrade[g]}<br>`;
+function updateLogs(){
+  document.getElementById("logbox").innerHTML =
+    "<b>outbound encoded packets</b><br>" + outbound.slice(-5).join("<br><br>");
+}
 
-  document.getElementById("statbox").innerHTML=out;
+function checkBreach(){
+  const v = document.getElementById("breachInput").value;
+  const encoded = btoa(v.toLowerCase());
+
+  const hit = students.find(s =>
+    s.id === encoded ||
+    atob(s.first).toLowerCase() === v.toLowerCase() ||
+    atob(s.last).toLowerCase() === v.toLowerCase()
+  );
+
+  document.getElementById("breachResult").innerText = hit
+    ? "record exists in encoded dataset"
+    : "no indexed exposure found";
 }
 </script>
 
