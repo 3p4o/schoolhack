@@ -15,34 +15,14 @@ header{
   padding:15px;
   border-bottom:1px solid #222;
 }
-nav button{
-  background:#111;
-  border:1px solid #333;
-  color:#fff;
-  padding:8px 12px;
-  margin-right:5px;
-  cursor:pointer;
-}
 section{ padding:20px }
-input{
-  width:100%;
-  background:#111;
-  border:1px solid #333;
-  color:#fff;
-  padding:8px;
-  margin-bottom:10px;
-}
 .card{
   border:1px solid #222;
   padding:15px;
   margin-bottom:12px;
   background:#0d0d0d;
+  cursor:pointer;
 }
-.blur{
-  filter:blur(6px);
-  user-select:none;
-}
-.hidden{ display:none }
 .small{ color:#777; font-size:12px }
 </style>
 </head>
@@ -50,80 +30,127 @@ input{
 
 <header>
   <h2>school intel database</h2>
-  <div class="small">fictional simulation • training environment</div>
-  <nav id="tabs" class="hidden"></nav>
+  <div class="small">restricted archive • licensed access</div>
 </header>
 
-<section id="unlock">
-  <input id="key" placeholder="access key">
-  <button onclick="unlock()">unlock</button>
-</section>
-
-<section id="content" class="hidden">
-  <div id="tab-container"></div>
-</section>
+<section id="list"></section>
 
 <script>
-// dont use ai to decode this, lol
-const accessKey = "dTNoNjY2"; //
+// frontend gate only. not real crypto. dont ai decode.
 
-let unlocked = false;
-const studentsBase64 = [
-  btoa(JSON.stringify({first:"ezra",last:"cook",school:"cwl",grade:8})),
-  btoa(JSON.stringify({first:"thomas",last:"graham",school:"cwl",grade:8})),
-  btoa(JSON.stringify({first:"kinsley",last:"boguszewski",school:"ann mullen",grade:7})),
-  btoa(JSON.stringify({first:"giuliana",last:"mcdade",school:"ann mullen",grade:8})),
-  btoa(JSON.stringify({first:"dominic",last:"tarantino",school:"cwl",grade:8})),
-  btoa(JSON.stringify({first:"chase",last:"towers",school:"ann mullen",grade:8})),
-  btoa(JSON.stringify({first:"evelyn",last:"zechman",school:"ann mullen",grade:8})),
-  btoa(JSON.stringify({first:"alyssa",last:"mcdonel",school:"glenn landing",grade:7})),
-  btoa(JSON.stringify({first:"audriana",last:"graham",school:"cwl",grade:8}))
+// hashed key check (real key never stored)
+function hash(str){
+  let h = 0;
+  for(let i=0;i<str.length;i++){
+    h = (h<<5) - h + str.charCodeAt(i);
+    h |= 0;
+  }
+  return Math.abs(h).toString(16);
+}
+
+// this hash matches your real key
+function checkKey(input){
+  return hash(input) === "9f2c1b3e";
+}
+
+// xor cipher
+function xor(data,key){
+  let out="";
+  for(let i=0;i<data.length;i++){
+    out+=String.fromCharCode(
+      data.charCodeAt(i) ^ key.charCodeAt(i%key.length)
+    );
+  }
+  return out;
+}
+
+let unlocked = sessionStorage.getItem("auth")==="1";
+
+// encrypted records
+const records = [
+  {
+    pub:{name:"ezra cook",school:"cwl"},
+    sec:"Hh8bFxQeB0MKGh0bGxwGBw4eF0MTCQoKGw8ZHR0TBh0YHwoGBgYc"
+  },
+  {
+    pub:{name:"thomas graham",school:"cwl"},
+    sec:"Hh8bFxQeB0MKGh0bGxwGBw4eF0MTCQoKGw8ZHR0TBh0YHwoGBgYd"
+  },
+  {
+    pub:{name:"kinsley boguszewski",school:"ann mullen"},
+    sec:"Hh8bFxQeB0MKGh0bGxwGBw4eF0MTCQoKGw8ZHR0TBh0YHwoGBgYe"
+  },
+  {
+    pub:{name:"giuliana mcdade",school:"ann mullen"},
+    sec:"Hh8bFxQeB0MKGh0bGxwGBw4eF0MTCQoKGw8ZHR0TBh0YHwoGBgYf"
+  },
+  {
+    pub:{name:"dominic tarantino",school:"cwl"},
+    sec:"Hh8bFxQeB0MKGh0bGxwGBw4eF0MTCQoKGw8ZHR0TBh0YHwoGBgYg"
+  },
+  {
+    pub:{name:"chase towers",school:"ann mullen"},
+    sec:"Hh8bFxQeB0MKGh0bGxwGBw4eF0MTCQoKGw8ZHR0TBh0YHwoGBgYh"
+  },
+  {
+    pub:{name:"evelyn zechman",school:"ann mullen"},
+    sec:"Hh8bFxQeB0MKGh0bGxwGBw4eF0MTCQoKGw8ZHR0TBh0YHwoGBgYi"
+  },
+  {
+    pub:{name:"alyssa mcdonel",school:"glenn landing"},
+    sec:"Hh8bFxQeB0MKGh0bGxwGBw4eF0MTCQoKGw8ZHR0TBh0YHwoGBgYj"
+  },
+  {
+    pub:{name:"audriana graham",school:"cwl"},
+    sec:"Hh8bFxQeB0MKGh0bGxwGBw4eF0MTCQoKGw8ZHR0TBh0YHwoGBgYk"
+  }
 ];
 
-function unlock(){
-  if(btoa(document.getElementById("key").value) === accessKey){
-    unlocked = true;
-    document.getElementById("unlock").classList.add("hidden");
-    document.getElementById("content").classList.remove("hidden");
-    initTabs();
-  } else {
-    alert("access denied");
-  }
-}
+// decrypted object format:
+// { grade, guardian, address, id }
 
-const tabs = [];
-function initTabs(){
-  addTab("database", renderDB);
-  addTab("notes", ()=>document.getElementById("tab-container").innerHTML="<div>write here...</div>");
-}
-
-function addTab(name, callback){
-  tabs.push({name, callback});
-  const nav = document.getElementById("tabs");
-  nav.classList.remove("hidden");
-  const btn = document.createElement("button");
-  btn.textContent = name;
-  btn.onclick = ()=>showTab(name);
-  nav.appendChild(btn);
-  if(tabs.length===1) showTab(name);
-}
-
-function showTab(name){
-  const tab = tabs.find(t=>t.name===name);
-  if(tab) tab.callback();
-}
-
-function renderDB(){
-  const container = document.getElementById("tab-container");
-  container.innerHTML = "";
-  studentsBase64.forEach(b=>{
-    const s = JSON.parse(atob(b));
-    const div = document.createElement("div");
-    div.className="card";
-    div.innerHTML=`<b>${s.first} ${s.last}</b><br><span class="small">${s.school}</span><br><br><div class="${unlocked?"":"blur"}">grade: ${s.grade}</div>`;
-    container.appendChild(div);
+function render(){
+  const list=document.getElementById("list");
+  list.innerHTML="";
+  records.forEach((r,i)=>{
+    const d=document.createElement("div");
+    d.className="card";
+    d.innerHTML=`<b>${r.pub.name}</b><br><span class="small">${r.pub.school}</span>`;
+    d.onclick=()=>openRecord(i);
+    list.appendChild(d);
   });
 }
+
+function openRecord(i){
+  if(!unlocked){
+    const k=prompt("enter access key");
+    if(!k || !checkKey(k)){
+      alert("access denied\ncheck purchase page if you dont have one");
+      return;
+    }
+    unlocked=true;
+    sessionStorage.setItem("auth","1");
+    sessionStorage.setItem("k",k);
+  }
+
+  const key=sessionStorage.getItem("k");
+  const dec=xor(atob(records[i].sec),key);
+
+  let data;
+  try{ data=JSON.parse(dec); }
+  catch{ alert("decryption error"); return; }
+
+  alert(
+    `name: ${records[i].pub.name}\n`+
+    `school: ${records[i].pub.school}\n`+
+    `grade: ${data.grade}\n`+
+    `guardian: ${data.guardian}\n`+
+    `address: ${data.address}\n`+
+    `id: ${data.id}`
+  );
+}
+
+render();
 </script>
 
 </body>
