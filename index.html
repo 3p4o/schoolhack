@@ -1,169 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Student Portal</title>
+<meta charset="utf-8">
+<title>team intel sim</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-/* ===== RESET & BASIC ===== */
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif;}
-html,body{width:100%;height:100%;overflow:hidden;background:#0a0014;color:#fff;}
-body.light{background:#f5f5f7;color:#0b0b0b;}
-
-/* ===== LAYOUT ===== */
-body{display:flex;}
-.sidebar{
-  width:240px;height:100vh;background:#12001f;display:flex;flex-direction:column;padding:20px;flex-shrink:0;
+body {
+  background:#080808;
+  color:#e6e6e6;
+  font-family: ui-monospace, monospace;
+  margin:0;
+  padding:20px;
 }
-body.light .sidebar{background:#fff;color:#000;}
-.sidebar .brand{font-size:1.5rem;font-weight:700;margin-bottom:30px;color:#b84dff;}
-.sidebar .nav-item{padding:12px;border-radius:8px;cursor:pointer;margin-bottom:8px;transition:0.2s;}
-.sidebar .nav-item:hover{background:rgba(255,255,255,0.1);}
-.sidebar .nav-item.active{background:rgba(184,77,255,0.2);}
 
-.main{flex:1;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
-.header{padding:20px;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;justify-content:space-between;align-items:center;}
-body.light .header{border-color:rgba(0,0,0,0.1);}
-.header h1{font-size:1.8rem;background:linear-gradient(135deg,#b84dff,#a200ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-body.light .header h1{background:none;color:#000;}
-.controls{display:flex;gap:10px;}
-.controls input{padding:8px 14px;border-radius:20px;border:none;outline:none;background:#1b001f;color:#fff;}
-body.light .controls input{background:#eee;color:#000;}
-.controls button{padding:8px 16px;border:none;border-radius:8px;background:#b84dff;color:#fff;cursor:pointer;}
-.controls button:hover{opacity:0.9;}
+h1 {
+  letter-spacing:2px;
+  margin-bottom:5px;
+}
 
-/* ===== CONTENT ===== */
-.page{flex:1;padding:20px;display:none;overflow:auto;}
-.page.active{display:block;}
-.student-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px;height:100%;}
-.student-card{background:#12001f;padding:12px;border-radius:12px;text-align:center;cursor:pointer;transition:0.2s;display:flex;flex-direction:column;justify-content:flex-start;}
-body.light .student-card{background:#fff;color:#000;}
-.student-card img{width:100%;height:200px;object-fit:cover;border-radius:8px;margin-bottom:10px;}
-.student-card .name{font-weight:600;font-size:1rem;margin-bottom:6px;}
-.student-card .id{font-size:0.85rem;color:#ccc;}
-body.light .student-card .id{color:#555;}
+.notice {
+  font-size:12px;
+  color:#777;
+  margin-bottom:20px;
+}
 
-/* ===== MODAL ===== */
-.modal{position:fixed;inset:0;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:0.3s;}
-.modal.open{opacity:1;pointer-events:auto;}
-.modal .content{background:#1b001f;padding:20px;border-radius:16px;width:90%;max-width:400px;text-align:center;position:relative;}
-body.light .modal .content{background:#fff;color:#000;}
-.modal .close{position:absolute;top:12px;right:12px;cursor:pointer;font-size:20px;font-weight:700;}
-.modal .login-info{margin-top:20px;padding:10px;background:rgba(255,255,255,0.05);border-radius:10px;}
-body.light .modal .login-info{background:#eee;}
+input, button {
+  background:#111;
+  border:1px solid #333;
+  color:#fff;
+  padding:8px;
+  width:100%;
+  margin-bottom:10px;
+}
+
+button {
+  cursor:pointer;
+}
+
+.card {
+  border:1px solid #222;
+  padding:15px;
+  margin-bottom:12px;
+  background:#0e0e0e;
+}
+
+.name {
+  font-size:18px;
+}
+
+.school {
+  color:#aaa;
+}
+
+.blur {
+  filter: blur(6px);
+  user-select:none;
+}
+
+.statbox {
+  border:1px solid #222;
+  padding:10px;
+  margin-bottom:15px;
+  background:#0d0d0d;
+  font-size:13px;
+}
+
+.hidden {
+  display:none;
+}
 </style>
 </head>
 <body>
-<nav class="sidebar">
-  <div class="brand">GLOUCESTER PORTAL</div>
-  <div class="nav-item active" data-target="students">Students</div>
-  <div class="nav-item" data-target="search">Search</div>
-  <div class="nav-item" data-target="settings">Settings</div>
-</nav>
 
-<main class="main">
-  <header class="header">
-    <h1>Student Portal</h1>
-    <div class="controls">
-      <input type="text" placeholder="Search by name or ID" id="searchInput">
-      <button id="searchBtn">Search</button>
-    </div>
-  </header>
+<h1>team intel database</h1>
+<div class="notice">fictional dataset for game / cyber training simulation</div>
 
-  <!-- STUDENTS PAGE -->
-  <section class="page active" id="students">
-    <div class="student-grid" id="studentGrid"></div>
-  </section>
-
-  <!-- SEARCH PAGE -->
-  <section class="page" id="search">
-    <div class="student-grid" id="searchGrid"></div>
-  </section>
-
-  <!-- SETTINGS PAGE -->
-  <section class="page" id="settings">
-    <p>Settings</p>
-    <button id="themeBtn">Toggle Theme</button>
-  </section>
-</main>
-
-<!-- MODAL -->
-<div class="modal" id="modal">
-  <div class="content">
-    <div class="close" id="modalClose">&times;</div>
-    <h2 id="modalName">Student Name</h2>
-    <p class="login-info" id="modalLogin">email: lastname.first@gloucestertownshipschools.org<br>Password: GTps{id}</p>
-  </div>
+<div id="login">
+  <input id="pw" placeholder="access key">
+  <button onclick="unlock()">unlock</button>
 </div>
 
+<input id="search" placeholder="search name / school / grade" oninput="render()">
+
+<div id="stats" class="statbox"></div>
+<div id="list"></div>
+
 <script>
-// ===== STUDENTS DATA =====
-const students = [
-  {id: "40001", name: "John Doe"},
-  {id: "50002", name: "Jane Smith"},
-  {id: "60003", name: "Michael Brown"},
-  {id: "40004", name: "Emily Davis"},
-  {id: "50005", name: "Chris Johnson"}
+const gate = "dTNoNjY2"; // base64 of u3h666 (visual gate only)
+let unlocked = false;
+
+const players = [
+  {name:"ezra j cook", grade:8, school:"cwl", guardian:"lashaya ford", address:"502 harbor ln", id:"56431"},
+  {name:"lucas johnson", grade:8, school:"cwl", guardian:"bryan / lisa johnson", address:"108 west ct", id:"54698"},
+  {name:"thomas j graham", grade:8, school:"cwl", guardian:"gerald / denise graham", address:"27 erial rd", id:"56254"},
+  {name:"kinsley a boguszewski", grade:7, school:"ann mullen", guardian:"daniel / dana boguszewski", address:"1081 kearsley rd", id:"56847"},
+  {name:"giuliana g mcdade", grade:8, school:"ann mullen", guardian:"jermain / melissa mcdade", address:"3 mulberry st", id:"56903"},
+  {name:"dominic tarantino", grade:8, school:"cwl", guardian:"francis / deborah tarantino", address:"319 dearborne ave", id:"56121"},
+  {name:"chase towers", grade:8, school:"ann mullen", guardian:"gary towers / kathleen macaro", address:"32 annapolis dr", id:"56365"},
+  {name:"evelyn zechman", grade:8, school:"ann mullen", guardian:"michael / janae zechman", address:"1 blue spruce dr", id:"56366"},
+  {name:"alyssa mcdonel", grade:7, school:"glenn landing", guardian:"robert / bernadette mcdonel", address:"29 brewer ave", id:"56641"},
+  {name:"audriana graham", grade:8, school:"cwl", guardian:"edward / michelina graham", address:"239 richmond ave", id:"54697"}
 ];
 
-const studentGrid = document.getElementById('studentGrid');
-const searchGrid = document.getElementById('searchGrid');
-const modal = document.getElementById('modal');
-const modalName = document.getElementById('modalName');
-const modalLogin = document.getElementById('modalLogin');
-const modalClose = document.getElementById('modalClose');
-
-// ===== RENDER STUDENTS =====
-function renderStudents(grid, list){
-  grid.innerHTML='';
-  list.forEach(s=>{
-    const card=document.createElement('div');
-    card.className='student-card';
-    card.innerHTML=`
-      <img src="${s.id}.jpg" alt="${s.name}" onerror="this.src='placeholder.jpg'">
-      <div class="name">${s.name}</div>
-      <div class="id">${s.id}</div>
-    `;
-    card.onclick=()=>{
-      modal.classList.add('open');
-      modalName.textContent=s.name;
-      modalLogin.innerHTML=`email: ${s.name.split(' ').map(x=>x.toLowerCase()).join('.')}@gloucestertownshipschools.org<br>Password: GTps${s.id}`;
-    };
-    grid.appendChild(card);
-  });
+function unlock() {
+  if (btoa(document.getElementById("pw").value) === gate) {
+    unlocked = true;
+    document.getElementById("login").classList.add("hidden");
+    render();
+  } else {
+    alert("access denied");
+  }
 }
 
-renderStudents(studentGrid, students);
+function render() {
+  const q = document.getElementById("search").value.toLowerCase();
+  const list = document.getElementById("list");
+  list.innerHTML = "";
 
-// ===== MODAL CLOSE =====
-modalClose.onclick=()=>modal.classList.remove('open');
+  let filtered = players.filter(p =>
+    p.name.includes(q) ||
+    p.school.includes(q) ||
+    String(p.grade).includes(q)
+  );
 
-// ===== NAVIGATION =====
-document.querySelectorAll('.nav-item').forEach(nav=>{
-  nav.addEventListener('click',()=>{
-    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-    nav.classList.add('active');
-    const target=nav.dataset.target;
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.getElementById(target).classList.add('active');
+  filtered.forEach(p => {
+    const div = document.createElement("div");
+    div.className = "card";
+
+    div.innerHTML = `
+      <div class="name">${p.name}</div>
+      <div class="school">${p.school}</div>
+      <div class="${unlocked ? "" : "blur"}">
+        grade: ${p.grade}<br>
+        guardian: ${p.guardian}<br>
+        address: ${p.address}<br>
+        id: ${p.id}
+      </div>
+    `;
+    list.appendChild(div);
   });
-});
 
-// ===== SEARCH =====
-const searchInput=document.getElementById('searchInput');
-const searchBtn=document.getElementById('searchBtn');
-searchBtn.addEventListener('click',()=>{
-  const term=searchInput.value.toLowerCase();
-  const results=students.filter(s=>s.name.toLowerCase().includes(term)||s.id.includes(term));
-  renderStudents(searchGrid, results);
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById('search').classList.add('active');
-});
+  stats(filtered);
+}
 
-// ===== THEME TOGGLE =====
-document.getElementById('themeBtn').addEventListener('click',()=>{
-  document.body.classList.toggle('light');
-});
+function stats(data) {
+  let schools = {};
+  let grades = {};
+
+  data.forEach(p => {
+    schools[p.school] = (schools[p.school] || 0) + 1;
+    grades[p.grade] = (grades[p.grade] || 0) + 1;
+  });
+
+  let out = `total players: ${data.length}<br><br>`;
+  out += "by school:<br>";
+  for (let s in schools) out += `${s}: ${schools[s]}<br>`;
+  out += "<br>by grade:<br>";
+  for (let g in grades) out += `grade ${g}: ${grades[g]}<br>`;
+
+  document.getElementById("stats").innerHTML = out;
+}
+
+render();
 </script>
+
 </body>
 </html>
